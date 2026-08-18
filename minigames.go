@@ -42,7 +42,7 @@ func GameCatalog() []GameDefinition {
 	return []GameDefinition{
 		{GamePlanes, "Catch the runaway memo flock", "Catch six falling memos in the moving inbox.", 6, 2},
 		{GameClock, "Stop the clock at precisely later", "Freeze three moments inside the timing window.", 3, 3},
-		{GameSnail, "Guide a snail through the inbox maze", "Navigate the nine by nine maze and reach the thread.", 1, 4},
+		{GameSnail, "Guide a snail through the inbox maze", "Explore a shifting fifteen by fifteen maze and reach the red thread.", 1, 4},
 		{GamePairs, "Match the secret office friendships", "Discover all four illustrated pairs.", 4, 2},
 		{GameThread, "Untangle the red-thread conspiracy", "Follow the object clue instead of spatial order.", 6, 3},
 		{GameRhythm, "Play the desk-lamp rhythm", "Repeat the complete six-beat office pattern.", 6, 3},

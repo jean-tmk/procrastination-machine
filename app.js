@@ -1,15 +1,15 @@
 const games=[
- {id:"planes",title:"Catch the runaway memo flock",note:"Move the inbox and catch six falling paper planes."},
- {id:"clock",title:"Stop the clock at precisely later",note:"Freeze the runaway hand inside the glowing slice three times."},
- {id:"snail",title:"Guide a snail through the inbox maze",note:"Find a safe route from the outbox to the tiny lamp."},
- {id:"pairs",title:"Match the secret office friendships",note:"Turn over the illustrated tiles and find all four pairs."},
- {id:"thread",title:"Untangle the red-thread conspiracy",note:"Trace the pins in order without losing the plot."},
- {id:"rhythm",title:"Play the desk-lamp rhythm",note:"Watch the office orchestra, then echo its six-beat pattern."},
- {id:"cabinet",title:"Sort the impossible filing cabinet",note:"Read each clue and file six wandering records correctly."},
- {id:"typewriter",title:"Repair the forgetful typewriter",note:"Catch the missing letters and rebuild three mysteriously damaged words."},
- {id:"spotlight",title:"Search the desk after midnight",note:"Sweep the lamp across the dark desk and uncover four hidden objects."},
- {id:"balance",title:"Balance the tower of unfinished business",note:"Stack seven drifting papers without letting the tower tip."},
- {id:"switchboard",title:"Reroute the office daydream",note:"Rotate the connections until every glowing thought reaches the red phone."}
+ {id:"planes",icon:3,title:"Catch the runaway memo flock",note:"Move the inbox and catch six falling paper planes."},
+ {id:"clock",icon:0,title:"Stop the clock at precisely later",note:"Freeze the orbiting red marker inside the golden window three times."},
+ {id:"snail",icon:2,title:"Guide a snail through the inbox maze",note:"Explore the shifting maze and guide the snail to the red thread."},
+ {id:"pairs",icon:9,title:"Match the secret office friendships",note:"Turn over the illustrated tiles and find all four pairs."},
+ {id:"thread",icon:7,title:"Untangle the red-thread conspiracy",note:"Trace the pins in order without losing the plot."},
+ {id:"rhythm",icon:1,title:"Play the desk-lamp rhythm",note:"Watch the office orchestra, then echo its six-beat pattern."},
+ {id:"cabinet",icon:11,title:"Sort the impossible filing cabinet",note:"Read each clue and file six wandering records correctly."},
+ {id:"typewriter",icon:5,title:"Repair the forgetful typewriter",note:"Catch the missing letters and rebuild three mysteriously damaged words."},
+ {id:"spotlight",icon:1,title:"Search the desk after midnight",note:"Sweep the lamp across the dark desk and uncover four hidden objects."},
+ {id:"balance",icon:6,title:"Balance the tower of unfinished business",note:"Stack seven drifting papers without letting the tower tip."},
+ {id:"switchboard",icon:4,title:"Reroute the office daydream",note:"Rotate the connections until every glowing thought reaches the red phone."}
 ];
 const art=["clock","lamp","snail","paper plane","key","pen","paper stack","thread","chair","clip","envelope","file cabinet"];
 const S={task:"",q:[],done:new Set(),start:0,active:0,tick:null,focus:null,cleanup:null};
@@ -28,7 +28,7 @@ document.querySelector("form").onsubmit=event=>{event.preventDefault();const tas
 function render(){
  const quests=$("#quests");quests.innerHTML="";
  S.q.forEach((game,index)=>{
-  const button=document.createElement("button"),locked=index&&!S.done.has(index-1),sprite=(games.findIndex(g=>g.id===game.id)+3)%art.length;
+  const button=document.createElement("button"),locked=index&&!S.done.has(index-1),sprite=game.icon;
   button.className=`quest ${S.done.has(index)?"done":""} ${locked?"locked":""}`;
   button.innerHTML=`<small>DETOUR 0${index+1}</small><strong>${game.title}</strong><b class="s${sprite}" aria-label="${art[sprite]}">${S.done.has(index)?"✓":art[sprite]}</b><span>${S.done.has(index)?"ACTUALLY PERFORMED":"OPEN THE LITTLE DOOR"}</span>`;
   button.onclick=()=>!locked&&!S.done.has(index)&&openGame(index);
@@ -60,19 +60,21 @@ function buildPlanes(stage){
 }
 
 function buildClock(stage){
- stage.innerHTML='<div class="clock-face sprite s0"><div class="clock-center"><i class="target"></i><b class="clock-hand"></b></div><span>LATER</span></div><button class="clock-stop">FREEZE TIME</button><p class="game-readout">PERFECT STOPS <b>0</b> / 3</p>';
+ stage.innerHTML='<div class="clock-face sprite s0"><div class="clock-center"><i class="target"></i><b class="clock-hand"></b></div><span>PRECISELY LATER</span></div><button class="clock-stop">FREEZE THE ORBIT</button><p class="game-readout">PERFECT STOPS <b>0</b> / 3</p>';
  const hand=stage.querySelector(".clock-hand"),button=stage.querySelector(".clock-stop");let hits=0,start=performance.now();
  button.onclick=()=>{const angle=((performance.now()-start)/2200*360)%360,distance=Math.min(Math.abs(angle),360-Math.abs(angle));hand.classList.add("paused");if(distance<38){hits++;stage.classList.add("time-hit");stage.querySelector(".game-readout b").textContent=hits;prog(hits,3)}else stage.classList.add("time-miss");setTimeout(()=>{stage.classList.remove("time-hit","time-miss");hand.classList.remove("paused");start=performance.now()},420)};
  prog(0,3);
 }
 
 function buildSnail(stage){
- const map=["#########","#S#.....#","#.#.###.#","#...#...#","###.#.###","#...#...#","#.#####.#","#......G#","#########"],blocks=new Set(),start=10,goal=70;map.forEach((row,y)=>[...row].forEach((cell,x)=>{if(cell==="#")blocks.add(y*9+x)}));let position=start,moves=0;
- stage.innerHTML='<div class="maze-board"></div><div class="maze-controls"><button class="up" data-d="-9" aria-label="move up">UP</button><button class="left" data-d="-1" aria-label="move left">LEFT</button><i></i><button class="right" data-d="1" aria-label="move right">RIGHT</button><button class="down" data-d="9" aria-label="move down">DOWN</button></div><p class="game-readout">MOVES <b>0</b></p>';
+ const size=15,cells=Array(size*size).fill("#"),start=size+1,stack=[start],directions=[-size,size,-1,1];cells[start]=".";
+ while(stack.length){const current=stack[stack.length-1],x=current%size,y=Math.floor(current/size),options=mix(directions).filter(d=>{const next=current+d*2,nx=next%size,ny=Math.floor(next/size);return nx>0&&nx<size-1&&ny>0&&ny<size-1&&cells[next]==="#"&&((d===1||d===-1)?Math.abs(nx-x)===2:Math.abs(ny-y)===2)});if(!options.length){stack.pop();continue}const d=options[0],next=current+d*2;cells[current+d]=".";cells[next]=".";stack.push(next)}
+ const distance=Array(size*size).fill(-1),queue=[start];distance[start]=0;for(let head=0;head<queue.length;head++){const current=queue[head];directions.forEach(d=>{const next=current+d,sameRow=d===1||d===-1?Math.floor(next/size)===Math.floor(current/size):true;if(next>=0&&next<cells.length&&sameRow&&cells[next]==="."&&distance[next]<0){distance[next]=distance[current]+1;queue.push(next)}})}const goal=distance.indexOf(Math.max(...distance)),blocks=new Set(cells.map((cell,index)=>cell==="#"?index:-1).filter(index=>index>=0));let position=start,moves=0;const seen=new Set();
+ stage.innerHTML=`<div class="maze-board" style="--maze-size:${size}"></div><div class="maze-controls"><button class="up" data-d="-${size}" aria-label="move up">UP</button><button class="left" data-d="-1" aria-label="move left">LEFT</button><i></i><button class="right" data-d="1" aria-label="move right">RIGHT</button><button class="down" data-d="${size}" aria-label="move down">DOWN</button></div><p class="game-readout">MOVES <b>0</b> · THREAD DISTANCE <strong>${distance[goal]}</strong></p>`;
  const board=stage.querySelector(".maze-board");
- for(let i=0;i<81;i++){const cell=document.createElement("div");cell.className=`maze-cell ${blocks.has(i)?"blocked":""} ${i===goal?"goal sprite s7":""}`;cell.dataset.cell=i;board.append(cell)}
- const draw=()=>{board.querySelectorAll(".snail-piece").forEach(x=>x.remove());const snail=document.createElement("i");snail.className="snail-piece sprite s2";board.children[position].append(snail)};
- stage.querySelectorAll(".maze-controls button").forEach(button=>button.onclick=()=>{const d=+button.dataset.d,next=position+d,sameRow=d===1||d===-1?Math.floor(next/9)===Math.floor(position/9):true;if(next>=0&&next<81&&sameRow&&!blocks.has(next)){position=next;moves++;stage.querySelector(".game-readout b").textContent=moves;draw();prog(position===goal?1:0,1)}});
+ for(let i=0;i<cells.length;i++){const cell=document.createElement("div");cell.className=`maze-cell ${blocks.has(i)?"blocked":""} ${i===goal?"goal sprite s7":""}`;board.append(cell)}
+ const draw=()=>{board.querySelectorAll(".snail-piece").forEach(x=>x.remove());const px=position%size,py=Math.floor(position/size);for(let y=Math.max(0,py-2);y<=Math.min(size-1,py+2);y++)for(let x=Math.max(0,px-2);x<=Math.min(size-1,px+2);x++)if(Math.abs(px-x)+Math.abs(py-y)<=3)seen.add(y*size+x);[...board.children].forEach((cell,index)=>cell.classList.toggle("seen",seen.has(index)));const snail=document.createElement("i");snail.className="snail-piece sprite s2";board.children[position].append(snail)};
+ stage.querySelectorAll(".maze-controls button").forEach(button=>button.onclick=()=>{const d=+button.dataset.d,next=position+d,sameRow=d===1||d===-1?Math.floor(next/size)===Math.floor(position/size):true;if(next>=0&&next<cells.length&&sameRow&&!blocks.has(next)){position=next;moves++;stage.querySelector(".game-readout b").textContent=moves;draw();prog(position===goal?1:0,1)}});
  draw();prog(0,1);
 }
 
