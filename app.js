@@ -5,7 +5,11 @@ const games=[
  {id:"pairs",title:"Match the secret office friendships",note:"Turn over the illustrated tiles and find all four pairs."},
  {id:"thread",title:"Untangle the red-thread conspiracy",note:"Trace the pins in order without losing the plot."},
  {id:"rhythm",title:"Play the desk-lamp rhythm",note:"Watch the office orchestra, then echo its six-beat pattern."},
- {id:"cabinet",title:"Sort the impossible filing cabinet",note:"Read each clue and file six wandering records correctly."}
+ {id:"cabinet",title:"Sort the impossible filing cabinet",note:"Read each clue and file six wandering records correctly."},
+ {id:"typewriter",title:"Repair the forgetful typewriter",note:"Catch the missing letters and rebuild three mysteriously damaged words."},
+ {id:"spotlight",title:"Search the desk after midnight",note:"Sweep the lamp across the dark desk and uncover four hidden objects."},
+ {id:"balance",title:"Balance the tower of unfinished business",note:"Stack seven drifting papers without letting the tower tip."},
+ {id:"switchboard",title:"Reroute the office daydream",note:"Rotate the connections until every glowing thought reaches the red phone."}
 ];
 const art=["clock","lamp","snail","paper plane","key","pen","paper stack","thread","chair","clip","envelope","file cabinet"];
 const S={task:"",q:[],done:new Set(),start:0,active:0,tick:null,focus:null,cleanup:null};
@@ -37,7 +41,7 @@ function openGame(index){
  S.active=index;const game=S.q[index],activity=$("#activity");
  $("#gameTitle").textContent=game.title;$("#instruction").textContent=game.note;
  activity.className=`mini-game ${game.id}`;activity.innerHTML="";
- const builders={planes:buildPlanes,clock:buildClock,snail:buildSnail,pairs:buildPairs,thread:buildThread,rhythm:buildRhythm,cabinet:buildCabinet};
+ const builders={planes:buildPlanes,clock:buildClock,snail:buildSnail,pairs:buildPairs,thread:buildThread,rhythm:buildRhythm,cabinet:buildCabinet,typewriter:buildTypewriter,spotlight:buildSpotlight,balance:buildBalance,switchboard:buildSwitchboard};
  builders[game.id](activity);
  $("#game").showModal();
 }
@@ -56,19 +60,19 @@ function buildPlanes(stage){
 }
 
 function buildClock(stage){
- stage.innerHTML='<div class="clock-face"><i class="target"></i><b class="clock-hand"></b><span>LATER</span></div><button class="clock-stop">FREEZE TIME</button><p class="game-readout">PERFECT STOPS <b>0</b> / 3</p>';
+ stage.innerHTML='<div class="clock-face sprite s0"><div class="clock-center"><i class="target"></i><b class="clock-hand"></b></div><span>LATER</span></div><button class="clock-stop">FREEZE TIME</button><p class="game-readout">PERFECT STOPS <b>0</b> / 3</p>';
  const hand=stage.querySelector(".clock-hand"),button=stage.querySelector(".clock-stop");let hits=0,start=performance.now();
  button.onclick=()=>{const angle=((performance.now()-start)/2200*360)%360,distance=Math.min(Math.abs(angle),360-Math.abs(angle));hand.classList.add("paused");if(distance<38){hits++;stage.classList.add("time-hit");stage.querySelector(".game-readout b").textContent=hits;prog(hits,3)}else stage.classList.add("time-miss");setTimeout(()=>{stage.classList.remove("time-hit","time-miss");hand.classList.remove("paused");start=performance.now()},420)};
  prog(0,3);
 }
 
 function buildSnail(stage){
- const blocks=new Set([6,7,12,17]),start=20,goal=4;let position=start,moves=0;
- stage.innerHTML='<div class="maze-board"></div><div class="maze-controls"><button data-d="-5">UP</button><button data-d="-1">LEFT</button><button data-d="1">RIGHT</button><button data-d="5">DOWN</button></div><p class="game-readout">MOVES <b>0</b></p>';
+ const map=["#########","#S#.....#","#.#.###.#","#...#...#","###.#.###","#...#...#","#.#####.#","#......G#","#########"],blocks=new Set(),start=10,goal=70;map.forEach((row,y)=>[...row].forEach((cell,x)=>{if(cell==="#")blocks.add(y*9+x)}));let position=start,moves=0;
+ stage.innerHTML='<div class="maze-board"></div><div class="maze-controls"><button class="up" data-d="-9" aria-label="move up">UP</button><button class="left" data-d="-1" aria-label="move left">LEFT</button><i></i><button class="right" data-d="1" aria-label="move right">RIGHT</button><button class="down" data-d="9" aria-label="move down">DOWN</button></div><p class="game-readout">MOVES <b>0</b></p>';
  const board=stage.querySelector(".maze-board");
- for(let i=0;i<25;i++){const cell=document.createElement("div");cell.className=`maze-cell ${blocks.has(i)?"blocked":""} ${i===goal?"goal sprite s1":""}`;cell.dataset.cell=i;board.append(cell)}
+ for(let i=0;i<81;i++){const cell=document.createElement("div");cell.className=`maze-cell ${blocks.has(i)?"blocked":""} ${i===goal?"goal sprite s7":""}`;cell.dataset.cell=i;board.append(cell)}
  const draw=()=>{board.querySelectorAll(".snail-piece").forEach(x=>x.remove());const snail=document.createElement("i");snail.className="snail-piece sprite s2";board.children[position].append(snail)};
- stage.querySelectorAll(".maze-controls button").forEach(button=>button.onclick=()=>{const d=+button.dataset.d,next=position+d,sameRow=d===1||d===-1?Math.floor(next/5)===Math.floor(position/5):true;if(next>=0&&next<25&&sameRow&&!blocks.has(next)){position=next;moves++;stage.querySelector(".game-readout b").textContent=moves;draw();prog(position===goal?1:0,1)}});
+ stage.querySelectorAll(".maze-controls button").forEach(button=>button.onclick=()=>{const d=+button.dataset.d,next=position+d,sameRow=d===1||d===-1?Math.floor(next/9)===Math.floor(position/9):true;if(next>=0&&next<81&&sameRow&&!blocks.has(next)){position=next;moves++;stage.querySelector(".game-readout b").textContent=moves;draw();prog(position===goal?1:0,1)}});
  draw();prog(0,1);
 }
 
@@ -81,10 +85,10 @@ function buildPairs(stage){
 }
 
 function buildThread(stage){
- const points=[[11,72],[25,20],[42,66],[58,28],[73,76],[88,25]];let next=0;
- stage.innerHTML='<div class="thread-board"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points=""></polyline></svg></div><p class="game-readout">CONNECTED <b>0</b> / 6</p>';
+ const points=[[13,22],[31,78],[46,28],[61,72],[76,18],[88,64]],icons=[7,4,10,5,9,6],route=[1,4,0,2,5,3];let next=0;
+ stage.innerHTML='<div class="thread-clue">KEY <span>then</span> CLIP <span>then</span> THREAD <span>then</span> ENVELOPE <span>then</span> PAPER <span>then</span> PEN</div><div class="thread-board"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points=""></polyline></svg></div><p class="game-readout">CONNECTED <b>0</b> / 6</p>';
  const board=stage.querySelector(".thread-board"),line=board.querySelector("polyline"),connected=[];
- points.forEach((point,index)=>{const pin=document.createElement("button");pin.className=`thread-pin sprite s${[4,9,10,5,7,6][index]}`;pin.style.left=point[0]+"%";pin.style.top=point[1]+"%";pin.dataset.n=index;pin.setAttribute("aria-label",`pin ${index+1}`);const number=document.createElement("b");number.textContent=index+1;pin.append(number);pin.onclick=()=>{if(index!==next){board.classList.add("wrong-thread");setTimeout(()=>board.classList.remove("wrong-thread"),300);return}pin.classList.add("linked");connected.push(point.join(","));line.setAttribute("points",connected.join(" "));next++;stage.querySelector(".game-readout b").textContent=next;prog(next,6)};board.append(pin)});
+ points.forEach((point,index)=>{const pin=document.createElement("button");pin.className=`thread-pin sprite s${icons[index]}`;pin.style.left=point[0]+"%";pin.style.top=point[1]+"%";pin.setAttribute("aria-label",art[icons[index]]);pin.onclick=()=>{if(index!==route[next]){board.classList.add("wrong-thread");setTimeout(()=>board.classList.remove("wrong-thread"),300);return}pin.classList.add("linked");connected.push(point.join(","));line.setAttribute("points",connected.join(" "));next++;stage.querySelector(".game-readout b").textContent=next;prog(next,6)};board.append(pin)});
  prog(0,6);
 }
 
@@ -104,6 +108,33 @@ function buildCabinet(stage){
  records.forEach(record=>{const card=document.createElement("button");card.className="record-card";card.dataset.slot=record.slot;card.innerHTML=`<span>${record.n}</span><small>CLUE ${record.slot}</small>`;card.onclick=()=>{recordsEl.querySelectorAll("button").forEach(x=>x.classList.remove("selected"));card.classList.add("selected");selected=card};recordsEl.append(card)});
  stage.querySelectorAll(".drawers button").forEach(drawer=>drawer.onclick=()=>{if(!selected)return;if(selected.dataset.slot===drawer.dataset.slot){selected.classList.add("filed");selected=null;filed++;stage.querySelector(".game-readout b").textContent=filed;prog(filed,6)}else{selected.classList.add("wrong");setTimeout(()=>selected&&selected.classList.remove("wrong"),350)}});
  prog(0,6);
+}
+
+function buildTypewriter(stage){
+ const puzzles=[{word:"LATER",blank:1,letter:"A"},{word:"MAYBE",blank:1,letter:"A"},{word:"PAUSE",blank:2,letter:"U"}];let round=0;
+ stage.innerHTML='<div class="typewriter-machine"><div class="paper-word"></div><div class="type-keys"></div></div><p class="type-note">The typewriter misplaced one letter.</p><p class="game-readout">WORDS REPAIRED <b>0</b> / 3</p>';
+ const word=stage.querySelector(".paper-word"),keys=stage.querySelector(".type-keys"),note=stage.querySelector(".type-note");
+ const show=()=>{const puzzle=puzzles[round];word.textContent=[...puzzle.word].map((letter,index)=>index===puzzle.blank?"_":letter).join(" ");keys.innerHTML="";mix(["A","E","I","O","U"]).forEach(letter=>{const key=document.createElement("button");key.textContent=letter;key.onclick=()=>{if(letter===puzzle.letter){word.textContent=[...puzzle.word].join(" ");note.textContent="The sentence can breathe again.";round++;stage.querySelector(".game-readout b").textContent=round;prog(round,3);if(round<3)setTimeout(show,550)}else{key.classList.add("wrong");note.textContent="That letter belongs to a different excuse.";setTimeout(()=>key.classList.remove("wrong"),300)}};keys.append(key)})};show();prog(0,3);
+}
+function buildSpotlight(stage){
+ const positions=[[14,18],[72,16],[25,70],[76,68]];let found=0;
+ stage.innerHTML='<div class="spotlight-desk"></div><p class="game-readout">DISCOVERED <b>0</b> / 4</p>';
+ const desk=stage.querySelector(".spotlight-desk");
+ positions.forEach((position,index)=>{const object=document.createElement("button");object.className=`hidden-object sprite s${[4,9,10,2][index]}`;object.style.left=position[0]+"%";object.style.top=position[1]+"%";object.setAttribute("aria-label",art[[4,9,10,2][index]]);object.onclick=()=>{if(object.classList.contains("found"))return;object.classList.add("found");found++;stage.querySelector(".game-readout b").textContent=found;prog(found,4)};desk.append(object)});
+ desk.onpointermove=event=>{const rect=desk.getBoundingClientRect();desk.style.setProperty("--mx",event.clientX-rect.left+"px");desk.style.setProperty("--my",event.clientY-rect.top+"px")};prog(0,4);
+}
+function buildBalance(stage){
+ let level=0,last=50,start=performance.now();
+ stage.innerHTML='<div class="balance-scene"><div class="paper-stack"></div><div class="drifting-paper">NEXT FILE</div></div><button class="drop-paper">DROP THE PAPER</button><p class="balance-note">Keep each page close to the center of the stack.</p><p class="game-readout">BALANCED <b>0</b> / 7</p>';
+ const scene=stage.querySelector(".balance-scene"),stack=stage.querySelector(".paper-stack"),moving=stage.querySelector(".drifting-paper"),note=stage.querySelector(".balance-note");
+ const timer=setInterval(()=>{const x=50+Math.sin((performance.now()-start)/520)*39;moving.style.left=x+"%";moving.dataset.x=x},20);S.cleanup=()=>clearInterval(timer);
+ stage.querySelector(".drop-paper").onclick=()=>{const x=+moving.dataset.x||50;if(level&&Math.abs(x-last)>24){stack.innerHTML="";level=0;last=50;scene.classList.add("topple");note.textContent="The unfinished business toppled. Begin the pile again.";stage.querySelector(".game-readout b").textContent=0;prog(0,7);setTimeout(()=>scene.classList.remove("topple"),500);return}const page=document.createElement("i");page.style.left=x+"%";page.style.bottom=14+level*20+"px";stack.append(page);last=x;level++;stage.querySelector(".game-readout b").textContent=level;note.textContent=level<7?"Suspiciously stable. Add another.":"A monument to doing it later.";prog(level,7)};prog(0,7);
+}
+function buildSwitchboard(stage){
+ const rotations=mix([1,2,3,1,2,3,1,2,3]);let solved=0;
+ stage.innerHTML='<div class="switch-grid"></div><p class="switch-note">Click each brass plate until its red line runs straight upward.</p><p class="game-readout">ALIGNED <b>0</b> / 9</p>';
+ const grid=stage.querySelector(".switch-grid");
+ rotations.forEach((rotation,index)=>{const tile=document.createElement("button");tile.className="switch-tile";tile.style.setProperty("--turn",rotation*90+"deg");tile.innerHTML=`<i></i><span>${String(index+1).padStart(2,"0")}</span>`;tile.onclick=()=>{rotations[index]=(rotations[index]+1)%4;tile.style.setProperty("--turn",rotations[index]*90+"deg");solved=rotations.filter(value=>value===0).length;stage.querySelector(".game-readout b").textContent=solved;tile.classList.toggle("aligned",rotations[index]===0);prog(solved,9)};grid.append(tile)});prog(0,9);
 }
 
 function prog(current,total){$("#progress").textContent=`${current} / ${total}`;$("#bar").style.width=Math.min(100,current/total*100)+"%";if(current>=total)setTimeout(complete,500)}

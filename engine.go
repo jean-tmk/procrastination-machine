@@ -937,6 +937,10 @@ func MiniGameRules() []MiniGameRule {
 		{ID: "thread", Target: 6, Instruction: "connect six conspiracy pins"},
 		{ID: "rhythm", Target: 6, Instruction: "repeat the six-beat desk rhythm"},
 		{ID: "cabinet", Target: 6, Instruction: "file six wandering records"},
+		{ID: "typewriter", Target: 3, Instruction: "repair three missing letters"},
+		{ID: "spotlight", Target: 4, Instruction: "discover four midnight objects"},
+		{ID: "balance", Target: 7, Instruction: "balance seven drifting pages"},
+		{ID: "switchboard", Target: 9, Instruction: "align nine brass connections"},
 	}
 }
 
