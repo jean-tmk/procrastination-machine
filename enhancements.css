@@ -35,3 +35,15 @@ form{max-width:680px!important;margin-top:42px!important}form label{font:400 25p
 .balance-scene{position:relative;height:255px;border-radius:24px;background:linear-gradient(#d8cce8,#f3dfc5);overflow:hidden}.balance-scene:after{content:"";position:absolute;left:20%;right:20%;bottom:8px;height:10px;border-radius:50%;background:#18162d}.drifting-paper,.paper-stack i{position:absolute;translate:-50%;width:150px;height:42px;border:2px solid #8b789e;border-radius:6px;background:#fff9e8;box-shadow:0 5px 0 #d1c2e4}.drifting-paper{top:22px;display:grid;place-items:center;font:600 7px "Space Grotesk";letter-spacing:.12em}.paper-stack i{z-index:2}.drop-paper{display:block;margin:12px auto 0;padding:12px 20px;border:0;border-radius:99px;background:#f05243;color:white;font:600 9px "Space Grotesk"}.topple .paper-stack{animation:shake .45s}
 .switch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:470px;margin:auto}.switch-tile{position:relative;height:78px;border:0;border-radius:15px;background:linear-gradient(145deg,#ead6a0,#9b713a);box-shadow:inset 0 0 0 2px #ffefb855,0 6px 0 #3a2945}.switch-tile i{position:absolute;left:50%;top:50%;width:5px;height:58%;border-radius:6px;background:#f05243;transform:translate(-50%,-50%) rotate(var(--turn));transition:.25s}.switch-tile i:after{content:"";position:absolute;left:-5px;top:-5px;width:15px;height:15px;border-radius:50%;background:#17162d}.switch-tile span{position:absolute;right:8px;bottom:6px;font:600 7px "Space Grotesk"}.switch-tile.aligned{box-shadow:0 0 0 5px #9acdb3,0 6px 0 #3a2945}
 @media(max-width:650px){.snail{grid-template-columns:1fr!important}.maze-controls{margin:auto}.thread-clue{border-radius:14px}.hidden-object{width:65px;height:65px}}
+.quest>b.s0{background-image:url("assets/object-0.webp")!important}
+.quest>b.s1{background-image:url("assets/object-1.webp")!important}
+.quest>b.s2{background-image:url("assets/object-2.webp")!important}
+.quest>b.s3{background-image:url("assets/object-3.webp")!important}
+.quest>b.s4{background-image:url("assets/object-4.webp")!important}
+.quest>b.s5{background-image:url("assets/object-5.webp")!important}
+.quest>b.s6{background-image:url("assets/object-6.webp")!important}
+.quest>b.s7{background-image:url("assets/object-7.webp")!important}
+.quest>b.s8{background-image:url("assets/object-8.webp")!important}
+.quest>b.s9{background-image:url("assets/object-9.webp")!important}
+.quest>b.s10{background-image:url("assets/object-10.webp")!important}
+.quest>b.s11{background-image:url("assets/object-11.webp")!important}
