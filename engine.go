@@ -916,6 +916,48 @@ func (e *Engine) nextID(prefix, material string) string {
 	return fmt.Sprintf("%s-%08x-%03d", prefix, hashText(material)&0xffffffff, e.nonce)
 }
 
+// MiniGameRule keeps the browser games deterministic when the Go engine is
+// compiled to WebAssembly. The interface may reshuffle their order, but each
+// game always retains a real objective and a measurable win condition.
+type MiniGameRule struct {
+	ID          string
+	Target      int
+	Instruction string
+}
+
+// MiniGameRules returns the complete activity cabinet. Keeping this catalog in
+// the engine means analytics, saved archives, and the playful browser layer
+// agree about what a completed detour actually represents.
+func MiniGameRules() []MiniGameRule {
+	return []MiniGameRule{
+		{ID: "planes", Target: 6, Instruction: "catch six falling memos"},
+		{ID: "clock", Target: 3, Instruction: "freeze three perfect moments"},
+		{ID: "snail", Target: 1, Instruction: "reach the lamp through the maze"},
+		{ID: "pairs", Target: 4, Instruction: "discover four object friendships"},
+		{ID: "thread", Target: 6, Instruction: "connect six conspiracy pins"},
+		{ID: "rhythm", Target: 6, Instruction: "repeat the six-beat desk rhythm"},
+		{ID: "cabinet", Target: 6, Instruction: "file six wandering records"},
+	}
+}
+
+// MiniGameProgress normalizes a game's current state for the shared metrics
+// display. Unknown games and negative values intentionally produce zero.
+func MiniGameProgress(gameID string, current int) int {
+	if current < 0 {
+		return 0
+	}
+	for _, rule := range MiniGameRules() {
+		if rule.ID != gameID {
+			continue
+		}
+		if current >= rule.Target {
+			return 100
+		}
+		return current * 100 / rule.Target
+	}
+	return 0
+}
+
 func hashText(text string) uint64 {
 	hash := fnv.New64a()
 	_, _ = hash.Write([]byte(text))
