@@ -166,7 +166,7 @@ function buildCursor(stage){
 }
 
 function buildShelves(stage){
- const excuses=[{t:"one blink",h:52},{t:"tiny pause",h:76},{t:"short detour",h:104},{t:"extended wander",h:136},{t:"entire afternoon",h:174}],shuffled=mix(excuses);let next=0;
+ const excuses=[{t:"one blink",h:112},{t:"tiny pause",h:136},{t:"short detour",h:160},{t:"extended wander",h:188},{t:"entire afternoon",h:218}],shuffled=mix(excuses);let next=0;
  stage.innerHTML='<div class="excuse-shelf"></div><p class="shelf-note">Begin with the smallest excuse and work upward.</p><p class="game-readout">SHELVED <b>0</b> / 5</p>';
  const shelf=stage.querySelector(".excuse-shelf");shuffled.forEach(excuse=>{const item=document.createElement("button");item.style.setProperty("--height",excuse.h+"px");item.innerHTML=`<i></i><span>${excuse.t}</span>`;item.onclick=()=>{if(item.classList.contains("placed"))return;if(excuse===excuses[next]){item.classList.add("placed");next++;stage.querySelector(".game-readout b").textContent=next;stage.querySelector(".shelf-note").textContent=next<5?"Correctly unreasonable. Keep going.":"A perfectly escalating wall of avoidance.";prog(next,5)}else{item.classList.add("wrong");stage.querySelector(".shelf-note").textContent="That excuse is wildly out of proportion.";setTimeout(()=>item.classList.remove("wrong"),350)}};shelf.append(item)});prog(0,5);
 }
