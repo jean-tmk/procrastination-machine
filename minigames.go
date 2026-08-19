@@ -25,6 +25,10 @@ const (
 	GameSpotlight   GameKind = "spotlight"
 	GameBalance     GameKind = "balance"
 	GameSwitchboard GameKind = "switchboard"
+	GameStamp       GameKind = "stamp"
+	GameShredder    GameKind = "shredder"
+	GameCursor      GameKind = "cursor"
+	GameShelves     GameKind = "shelves"
 )
 
 // GameDefinition is the engine-owned contract used by the interface, archive,
@@ -51,6 +55,10 @@ func GameCatalog() []GameDefinition {
 		{GameSpotlight, "Search the desk after midnight", "Reveal four objects with the wandering lamp.", 4, 2},
 		{GameBalance, "Balance unfinished business", "Build a stable seven-page stack.", 7, 4},
 		{GameSwitchboard, "Reroute the office daydream", "Align all nine brass connections.", 9, 3},
+		{GameStamp, "Stamp the forms before they escape", "Certify six glowing forms before they move.", 6, 3},
+		{GameShredder, "Feed the shredder only bad ideas", "Destroy five bad ideas without shredding useful work.", 5, 2},
+		{GameCursor, "Trap the runaway cursor", "Catch the moving cursor eight times.", 8, 4},
+		{GameShelves, "Arrange the cabinet of tiny excuses", "Order five excuses from shortest to largest.", 5, 3},
 	}
 }
 
@@ -152,6 +160,14 @@ func (s *GameSession) Apply(action GameAction) GameResult {
 		accepted, message = s.applyBalance(action)
 	case GameSwitchboard:
 		accepted, message = s.applySwitchboard(action)
+	case GameStamp:
+		accepted, message = s.applyStamp(action)
+	case GameShredder:
+		accepted, message = s.applyShredder(action)
+	case GameCursor:
+		accepted, message = s.applyCursor(action)
+	case GameShelves:
+		accepted, message = s.applyShelves(action)
 	default:
 		message = "unknown ruleset"
 	}
@@ -363,6 +379,218 @@ func (s *GameSession) applySwitchboard(action GameAction) (bool, string) {
 		return true, "the daydream has a complete circuit"
 	}
 	return true, "one connection rerouted"
+}
+
+func (s *GameSession) applyStamp(action GameAction) (bool, string) {
+	if action.Name != "stamp" || action.Value < 0 || action.Value >= 9 {
+		return false, "choose one of the nine moving forms"
+	}
+	if action.Value != action.Secondary {
+		return false, "that form was not emotionally ready"
+	}
+	s.Progress++
+	return true, "certified unnecessary"
+}
+
+func (s *GameSession) applyShredder(action GameAction) (bool, string) {
+	if action.Name != "shred" || action.Value < 0 || action.Value >= 8 {
+		return false, "select a document for the shredder"
+	}
+	if s.Flags[action.Value] {
+		return false, "that idea has already become confetti"
+	}
+	if action.Secondary != 1 {
+		return false, "protected: that idea might accidentally help"
+	}
+	s.Flags[action.Value] = true
+	s.Progress++
+	return true, "bad idea successfully destroyed"
+}
+
+func (s *GameSession) applyCursor(action GameAction) (bool, string) {
+	if action.Name != "catch" || action.Value < 0 || action.Value > 100 || action.Secondary < 0 || action.Secondary > 100 {
+		return false, "the cursor escaped into another document"
+	}
+	s.Progress++
+	return true, "cursor temporarily contained"
+}
+
+func (s *GameSession) applyShelves(action GameAction) (bool, string) {
+	if action.Name != "shelve" || action.Value < 0 || action.Value >= 5 {
+		return false, "choose an excuse for the shelf"
+	}
+	if action.Value != s.Progress {
+		return false, "that excuse is wildly out of proportion"
+	}
+	s.Progress++
+	return true, "correctly unreasonable"
+}
+
+// DetourCycle guarantees that every game is dealt once before any game can
+// return. Remaining is serializable, allowing the browser to preserve the
+// promise across repeated shuffles and page reloads.
+type DetourCycle struct {
+	Remaining []GameKind
+	Recent    []GameKind
+	State     uint64
+}
+
+// NewDetourCycle starts a deterministic cycle. A zero seed is replaced so the
+// xorshift generator never becomes trapped at zero.
+func NewDetourCycle(seed uint64) *DetourCycle {
+	if seed == 0 {
+		seed = 0x9e3779b97f4a7c15
+	}
+	return &DetourCycle{State: seed}
+}
+
+// Next deals a complete round without duplicates. The interface requests five
+// at a time; fifteen games therefore produce exactly three clean rounds.
+func (cycle *DetourCycle) Next(count int) []GameKind {
+	if cycle == nil || count <= 0 {
+		return nil
+	}
+	if count > len(GameCatalog()) {
+		count = len(GameCatalog())
+	}
+	if len(cycle.Remaining) < count {
+		cycle.refill()
+	}
+	round := append([]GameKind(nil), cycle.Remaining[:count]...)
+	cycle.Remaining = append([]GameKind(nil), cycle.Remaining[count:]...)
+	cycle.Recent = append([]GameKind(nil), round...)
+	return round
+}
+
+func (cycle *DetourCycle) refill() {
+	all := make([]GameKind, 0, len(GameCatalog()))
+	for _, definition := range GameCatalog() {
+		all = append(all, definition.Kind)
+	}
+	for index := len(all) - 1; index > 0; index-- {
+		other := cycle.randomIndex(index + 1)
+		all[index], all[other] = all[other], all[index]
+	}
+	if len(cycle.Recent) > 0 {
+		recent := make(map[GameKind]bool, len(cycle.Recent))
+		for _, kind := range cycle.Recent {
+			recent[kind] = true
+		}
+		fresh := make([]GameKind, 0, len(all))
+		deferred := make([]GameKind, 0, len(cycle.Recent))
+		for _, kind := range all {
+			if recent[kind] {
+				deferred = append(deferred, kind)
+			} else {
+				fresh = append(fresh, kind)
+			}
+		}
+		all = append(fresh, deferred...)
+	}
+	cycle.Remaining = all
+}
+
+func (cycle *DetourCycle) randomIndex(limit int) int {
+	cycle.State ^= cycle.State << 13
+	cycle.State ^= cycle.State >> 7
+	cycle.State ^= cycle.State << 17
+	return int(cycle.State % uint64(limit))
+}
+
+// DetourCycleSnapshot is the durable form stored by a browser or service. It
+// intentionally contains IDs rather than definitions so copy changes cannot
+// invalidate an in-progress no-repeat run.
+type DetourCycleSnapshot struct {
+	Remaining []GameKind
+	Recent    []GameKind
+	State     uint64
+}
+
+// Snapshot returns a deep copy safe for JSON encoding or cross-goroutine use.
+func (cycle *DetourCycle) Snapshot() DetourCycleSnapshot {
+	if cycle == nil {
+		return DetourCycleSnapshot{}
+	}
+	return DetourCycleSnapshot{
+		Remaining: append([]GameKind(nil), cycle.Remaining...),
+		Recent:    append([]GameKind(nil), cycle.Recent...),
+		State:     cycle.State,
+	}
+}
+
+// RestoreDetourCycle rejects stale, duplicated, or invented game identifiers.
+// A corrupted local snapshot therefore starts clean instead of breaking the
+// promise that all fifteen games appear before a repeat.
+func RestoreDetourCycle(snapshot DetourCycleSnapshot) (*DetourCycle, error) {
+	known := make(map[GameKind]bool, len(GameCatalog()))
+	for _, definition := range GameCatalog() {
+		known[definition.Kind] = true
+	}
+	if len(snapshot.Remaining) > len(known) || len(snapshot.Recent) > 5 {
+		return nil, errors.New("invalid detour cycle size")
+	}
+	seen := make(map[GameKind]bool, len(snapshot.Remaining))
+	for _, kind := range snapshot.Remaining {
+		if !known[kind] {
+			return nil, errors.New("detour cycle contains an unknown game")
+		}
+		if seen[kind] {
+			return nil, errors.New("detour cycle contains an early repeat")
+		}
+		seen[kind] = true
+	}
+	for _, kind := range snapshot.Recent {
+		if !known[kind] {
+			return nil, errors.New("recent round contains an unknown game")
+		}
+	}
+	state := snapshot.State
+	if state == 0 {
+		state = 0x9e3779b97f4a7c15
+	}
+	return &DetourCycle{
+		Remaining: append([]GameKind(nil), snapshot.Remaining...),
+		Recent:    append([]GameKind(nil), snapshot.Recent...),
+		State:     state,
+	}, nil
+}
+
+// PreviewRounds proves the next groups without consuming the live cycle. It
+// is useful for archive displays and tests that assert three disjoint rounds.
+func (cycle *DetourCycle) PreviewRounds(rounds, perRound int) [][]GameKind {
+	if cycle == nil || rounds <= 0 || perRound <= 0 {
+		return nil
+	}
+	copyCycle := &DetourCycle{
+		Remaining: append([]GameKind(nil), cycle.Remaining...),
+		Recent:    append([]GameKind(nil), cycle.Recent...),
+		State:     cycle.State,
+	}
+	preview := make([][]GameKind, 0, rounds)
+	for index := 0; index < rounds; index++ {
+		preview = append(preview, copyCycle.Next(perRound))
+	}
+	return preview
+}
+
+// IsCompletePass reports whether a collection contains every current game
+// exactly once, regardless of the order in which its rounds were displayed.
+func IsCompletePass(kinds []GameKind) bool {
+	definitions := GameCatalog()
+	if len(kinds) != len(definitions) {
+		return false
+	}
+	wanted := make(map[GameKind]bool, len(definitions))
+	for _, definition := range definitions {
+		wanted[definition.Kind] = true
+	}
+	for _, kind := range kinds {
+		if !wanted[kind] {
+			return false
+		}
+		delete(wanted, kind)
+	}
+	return len(wanted) == 0
 }
 
 // OrderedGameKinds exposes a stable menu ordering for archives and tests.

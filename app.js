@@ -9,17 +9,24 @@ const games=[
  {id:"typewriter",icon:5,title:"Repair the forgetful typewriter",note:"Catch the missing letters and rebuild three mysteriously damaged words."},
  {id:"spotlight",icon:1,title:"Search the desk after midnight",note:"Sweep the lamp across the dark desk and uncover four hidden objects."},
  {id:"balance",icon:6,title:"Balance the tower of unfinished business",note:"Stack seven drifting papers without letting the tower tip."},
- {id:"switchboard",icon:4,title:"Reroute the office daydream",note:"Rotate the connections until every glowing thought reaches the red phone."}
+ {id:"switchboard",icon:4,title:"Reroute the office daydream",note:"Rotate the connections until every glowing thought reaches the red phone."},
+ {id:"stamp",icon:9,title:"Stamp the forms before they escape",note:"Catch and certify six glowing forms before the desk changes its mind."},
+ {id:"shredder",icon:6,title:"Feed the shredder only bad ideas",note:"Destroy the five terrible ideas while protecting the suspiciously useful ones."},
+ {id:"cursor",icon:5,title:"Trap the runaway cursor",note:"Catch the blinking cursor eight times before it files itself elsewhere."},
+ {id:"shelves",icon:11,title:"Arrange the cabinet of tiny excuses",note:"Select the five excuses from the shortest delay to the most enormous."}
 ];
 const art=["clock","lamp","snail","paper plane","key","pen","paper stack","thread","chair","clip","envelope","file cabinet"];
-const S={task:"",q:[],done:new Set(),start:0,active:0,tick:null,focus:null,cleanup:null};
+const S={task:"",q:[],remaining:[],done:new Set(),start:0,active:0,tick:null,focus:null,cleanup:null};
 const $=selector=>document.querySelector(selector);
 
 setInterval(()=>$("#clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),1000);
 document.querySelectorAll("nav button").forEach(button=>button.onclick=()=>$("#task").value=button.textContent);
 function mix(items){return [...items].sort(()=>Math.random()-.5)}
+function loadCycle(){try{const saved=JSON.parse(localStorage.getItem("pm-game-cycle-v2")||"[]"),valid=new Set(games.map(game=>game.id));return saved.filter((id,index)=>valid.has(id)&&saved.indexOf(id)===index)}catch{return[]}}
+function refillCycle(){const previous=new Set(S.q.map(game=>game.id)),fresh=mix(games.map(game=>game.id)),notRecent=fresh.filter(id=>!previous.has(id)),recent=fresh.filter(id=>previous.has(id));S.remaining=[...notRecent,...recent]}
+function dealRound(){if(!S.remaining.length)S.remaining=loadCycle();if(S.remaining.length<5)refillCycle();const ids=S.remaining.splice(0,5);localStorage.setItem("pm-game-cycle-v2",JSON.stringify(S.remaining));S.q=ids.map(id=>games.find(game=>game.id===id));S.done.clear()}
 function begin(task){
- S.task=task;S.done.clear();S.start=Date.now();S.q=mix(games).slice(0,5);
+ S.task=task;S.start=Date.now();dealRound();
  $("#welcome").hidden=true;$("#play").hidden=false;$("#realTask").textContent=task;
  render();clearInterval(S.tick);S.tick=setInterval(metrics,1000);metrics();
 }
@@ -41,7 +48,7 @@ function openGame(index){
  S.active=index;const game=S.q[index],activity=$("#activity");
  $("#gameTitle").textContent=game.title;$("#instruction").textContent=game.note;
  activity.className=`mini-game ${game.id}`;activity.innerHTML="";
- const builders={planes:buildPlanes,clock:buildClock,snail:buildSnail,pairs:buildPairs,thread:buildThread,rhythm:buildRhythm,cabinet:buildCabinet,typewriter:buildTypewriter,spotlight:buildSpotlight,balance:buildBalance,switchboard:buildSwitchboard};
+ const builders={planes:buildPlanes,clock:buildClock,snail:buildSnail,pairs:buildPairs,thread:buildThread,rhythm:buildRhythm,cabinet:buildCabinet,typewriter:buildTypewriter,spotlight:buildSpotlight,balance:buildBalance,switchboard:buildSwitchboard,stamp:buildStamp,shredder:buildShredder,cursor:buildCursor,shelves:buildShelves};
  builders[game.id](activity);
  $("#game").showModal();
 }
@@ -137,6 +144,31 @@ function buildSwitchboard(stage){
  stage.innerHTML='<div class="switch-grid"></div><p class="switch-note">Click each brass plate until its red line runs straight upward.</p><p class="game-readout">ALIGNED <b>0</b> / 9</p>';
  const grid=stage.querySelector(".switch-grid");
  rotations.forEach((rotation,index)=>{const tile=document.createElement("button");tile.className="switch-tile";tile.style.setProperty("--turn",rotation*90+"deg");tile.innerHTML=`<i></i><span>${String(index+1).padStart(2,"0")}</span>`;tile.onclick=()=>{rotations[index]=(rotations[index]+1)%4;tile.style.setProperty("--turn",rotations[index]*90+"deg");solved=rotations.filter(value=>value===0).length;stage.querySelector(".game-readout b").textContent=solved;tile.classList.toggle("aligned",rotations[index]===0);prog(solved,9)};grid.append(tile)});prog(0,9);
+}
+
+function buildStamp(stage){
+ let active=Math.floor(Math.random()*9),stamped=0;
+ stage.innerHTML='<div class="stamp-desk"></div><p class="stamp-note">The glowing form is currently willing to be approved.</p><p class="game-readout">CERTIFIED <b>0</b> / 6</p>';
+ const desk=stage.querySelector(".stamp-desk"),draw=()=>{[...desk.children].forEach((form,index)=>form.classList.toggle("active",index===active))};
+ for(let index=0;index<9;index++){const form=document.createElement("button");form.innerHTML=`<span>FORM ${String(index+1).padStart(2,"0")}</span><i></i>`;form.onclick=()=>{if(index!==active){form.classList.add("rejected");stage.querySelector(".stamp-note").textContent="That form was not emotionally ready.";setTimeout(()=>form.classList.remove("rejected"),300);return}form.classList.add("stamped");stamped++;stage.querySelector(".game-readout b").textContent=stamped;stage.querySelector(".stamp-note").textContent="CERTIFIED UNNECESSARY.";prog(stamped,6);do active=Math.floor(Math.random()*9);while(active===index);setTimeout(()=>{form.classList.remove("stamped");draw()},220)};desk.append(form)}draw();prog(0,6);
+}
+
+function buildShredder(stage){
+ const files=mix([{t:"REPLY ALL FOREVER",bad:1},{t:"MEETING ABOUT MEETINGS",bad:1},{t:"PRINT THE INTERNET",bad:1},{t:"URGENT FONT EMERGENCY",bad:1},{t:"RENAME EVERY FOLDER",bad:1},{t:"SAVE THE ACTUAL WORK",bad:0},{t:"CALL SOMEONE KIND",bad:0},{t:"DRINK A GLASS OF WATER",bad:0}]);let shredded=0;
+ stage.innerHTML='<div class="shredder-files"></div><div class="shredder-mouth"><span>BAD IDEAS ONLY</span><i></i></div><p class="shred-note">Choose carefully. The shredder has no undo button.</p><p class="game-readout">BAD IDEAS SHREDDED <b>0</b> / 5</p>';
+ const tray=stage.querySelector(".shredder-files");files.forEach(file=>{const card=document.createElement("button");card.textContent=file.t;card.onclick=()=>{if(card.classList.contains("gone"))return;if(file.bad){card.classList.add("gone");shredded++;stage.querySelector(".game-readout b").textContent=shredded;stage.querySelector(".shred-note").textContent="An excellent administrative decision.";prog(shredded,5)}else{card.classList.add("protected");stage.querySelector(".shred-note").textContent="Protected! That one might accidentally help.";setTimeout(()=>card.classList.remove("protected"),450)}};tray.append(card)});prog(0,5);
+}
+
+function buildCursor(stage){
+ let caught=0;
+ stage.innerHTML='<div class="cursor-field"><button class="runaway-cursor" aria-label="catch the runaway cursor"><i></i></button><span>THIS DOCUMENT HAS 48 UNSAVED FEELINGS</span></div><p class="cursor-note">It becomes less cooperative every time.</p><p class="game-readout">CAUGHT <b>0</b> / 8</p>';
+ const field=stage.querySelector(".cursor-field"),cursor=stage.querySelector(".runaway-cursor"),move=()=>{cursor.style.left=8+Math.random()*82+"%";cursor.style.top=12+Math.random()*72+"%";cursor.style.setProperty("--tilt",-25+Math.random()*50+"deg")};cursor.onclick=()=>{caught++;stage.querySelector(".game-readout b").textContent=caught;field.classList.add("cursor-caught");setTimeout(()=>field.classList.remove("cursor-caught"),160);cursor.style.scale=String(Math.max(.58,1-caught*.05));move();prog(caught,8)};move();prog(0,8);
+}
+
+function buildShelves(stage){
+ const excuses=[{t:"one blink",h:52},{t:"tiny pause",h:76},{t:"short detour",h:104},{t:"extended wander",h:136},{t:"entire afternoon",h:174}],shuffled=mix(excuses);let next=0;
+ stage.innerHTML='<div class="excuse-shelf"></div><p class="shelf-note">Begin with the smallest excuse and work upward.</p><p class="game-readout">SHELVED <b>0</b> / 5</p>';
+ const shelf=stage.querySelector(".excuse-shelf");shuffled.forEach(excuse=>{const item=document.createElement("button");item.style.setProperty("--height",excuse.h+"px");item.innerHTML=`<i></i><span>${excuse.t}</span>`;item.onclick=()=>{if(item.classList.contains("placed"))return;if(excuse===excuses[next]){item.classList.add("placed");next++;stage.querySelector(".game-readout b").textContent=next;stage.querySelector(".shelf-note").textContent=next<5?"Correctly unreasonable. Keep going.":"A perfectly escalating wall of avoidance.";prog(next,5)}else{item.classList.add("wrong");stage.querySelector(".shelf-note").textContent="That excuse is wildly out of proportion.";setTimeout(()=>item.classList.remove("wrong"),350)}};shelf.append(item)});prog(0,5);
 }
 
 function prog(current,total){$("#progress").textContent=`${current} / ${total}`;$("#bar").style.width=Math.min(100,current/total*100)+"%";if(current>=total)setTimeout(complete,500)}
