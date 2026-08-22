@@ -1,0 +1,57 @@
+polyglot/languages/go/module.go linguist-detectable=true linguist-language=Go
+polyglot/languages/abap-cds/module.asddls linguist-detectable=true linguist-language=ABAP CDS
+polyglot/languages/ats/module.dats linguist-detectable=true linguist-language=ATS
+polyglot/languages/apex/module.cls linguist-detectable=true linguist-language=Apex
+polyglot/languages/b/module.b linguist-detectable=true linguist-language=B
+polyglot/languages/berry/module.be linguist-detectable=true linguist-language=Berry
+polyglot/languages/boogie/module.bpl linguist-detectable=true linguist-language=Boogie
+polyglot/languages/clips/module.clp linguist-detectable=true linguist-language=CLIPS
+polyglot/languages/cangjie/module.cj linguist-detectable=true linguist-language=Cangjie
+polyglot/languages/clarion/module.clw linguist-detectable=true linguist-language=Clarion
+polyglot/languages/coldfusion-cfc/module.cfc linguist-detectable=true linguist-language=ColdFusion CFC
+polyglot/languages/cycript/module.cy linguist-detectable=true linguist-language=Cycript
+polyglot/languages/dataweave/module.dwl linguist-detectable=true linguist-language=DataWeave
+polyglot/languages/eq/module.eq linguist-detectable=true linguist-language=EQ
+polyglot/languages/erlang/Emakefile.txt linguist-detectable=true linguist-language=Erlang
+polyglot/languages/faust/module.dsp linguist-detectable=true linguist-language=Faust
+polyglot/languages/freemarker/module.ftl linguist-detectable=true linguist-language=FreeMarker
+polyglot/languages/gdshader/module.gdshader linguist-detectable=true linguist-language=GDShader
+polyglot/languages/gleam/module.gleam linguist-detectable=true linguist-language=Gleam
+polyglot/languages/groovy/Jenkinsfile.txt linguist-detectable=true linguist-language=Groovy
+polyglot/languages/hiveql/module.q linguist-detectable=true linguist-language=HiveQL
+polyglot/languages/imhex-pattern-language/module.hexpat linguist-detectable=true linguist-language=ImHex Pattern Language
+polyglot/languages/j/module.ijs linguist-detectable=true linguist-language=J
+polyglot/languages/java-template-engine/module.jte linguist-detectable=true linguist-language=Java Template Engine
+polyglot/languages/kcl/kcl.mod linguist-detectable=true linguist-language=KCL
+polyglot/languages/lolcode/module.lol linguist-detectable=true linguist-language=LOLCODE
+polyglot/languages/ligolang/module.ligo linguist-detectable=true linguist-language=LigoLANG
+polyglot/languages/livescript/Slakefile.txt linguist-detectable=true linguist-language=LiveScript
+polyglot/languages/m4sugar/configure.ac linguist-detectable=true linguist-language=M4Sugar
+polyglot/languages/mathematical-programming-system/module.mps linguist-detectable=true linguist-language=Mathematical Programming System
+polyglot/languages/mirah/module.druby linguist-detectable=true linguist-language=Mirah
+polyglot/languages/moonscript/module.moon linguist-detectable=true linguist-language=MoonScript
+polyglot/languages/nasal/module.nas linguist-detectable=true linguist-language=Nasal
+polyglot/languages/nit/module.nit linguist-detectable=true linguist-language=Nit
+polyglot/languages/objectscript/module.cls linguist-detectable=true linguist-language=ObjectScript
+polyglot/languages/openedge-abl/module.p linguist-detectable=true linguist-language=OpenEdge ABL
+polyglot/languages/pddl/module.pddl linguist-detectable=true linguist-language=PDDL
+polyglot/languages/parrot-internal-representation/module.pir linguist-detectable=true linguist-language=Parrot Internal Representation
+polyglot/languages/polar/module.polar linguist-detectable=true linguist-language=Polar
+polyglot/languages/prolog/module.pl linguist-detectable=true linguist-language=Prolog
+polyglot/languages/qmake/module.pro linguist-detectable=true linguist-language=QMake
+polyglot/languages/rpc/module.x linguist-detectable=true linguist-language=RPC
+polyglot/languages/red/module.red linguist-detectable=true linguist-language=Red
+polyglot/languages/rouge/module.rg linguist-detectable=true linguist-language=Rouge
+polyglot/languages/salt/module.sls linguist-detectable=true linguist-language=Salt
+polyglot/languages/sieve/module.sieve linguist-detectable=true linguist-language=Sieve
+polyglot/languages/snakemake/Snakefile.txt linguist-detectable=true linguist-language=Snakemake
+polyglot/languages/sway/module.sw linguist-detectable=true linguist-language=Sway
+polyglot/languages/talon/module.talon linguist-detectable=true linguist-language=Talon
+polyglot/languages/turing/module.t linguist-detectable=true linguist-language=Turing
+polyglot/languages/vba/module.bas linguist-detectable=true linguist-language=VBA
+polyglot/languages/volt/module.volt linguist-detectable=true linguist-language=Volt
+polyglot/languages/wren/module.wren linguist-detectable=true linguist-language=Wren
+polyglot/languages/xtend/module.xtend linguist-detectable=true linguist-language=Xtend
+polyglot/languages/zimpl/module.zimpl linguist-detectable=true linguist-language=Zimpl
+polyglot/languages/q/module.q linguist-detectable=true linguist-language=q
+polyglot/majority/exhibit_registry.go linguist-detectable=true linguist-language=Go
